@@ -27,7 +27,7 @@ webgl/
   videos/                  Vídeos de la base
 ```
 
-El proyecto Robot conserva por ahora el ejemplo de cubo texturado que contiene su archivo actual. Su página carga `js/robot.js`, por lo que puede desarrollarse sin cambiar el hockey. `test.html` y `js/test.js` conservan el ejemplo original.
+La página Robot muestra por ahora la foto del gato y el mensaje «Work in progress». El archivo `js/robot.js` se conserva para desarrollar el segundo proyecto, pero esta pantalla provisional no lo carga. `test.html` y `js/test.js` conservan el ejemplo original.
 
 ## Desarrollo local
 
