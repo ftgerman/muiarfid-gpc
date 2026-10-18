@@ -23,7 +23,6 @@ const camara = new THREE.PerspectiveCamera(
 camara.position.set(0, 7, 7);
 camara.lookAt(0, 0, 0);
 
-// Luz ambiental suave: aporta iluminación uniforme a toda la escena.
 //const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.5);
 const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.25);
 escena.add(luzAmbiente);

@@ -1,2 +1,5 @@
 .DS_Store
 ._*
+
+# Original del vídeo: se conserva en local; GitHub publica la versión MP4.
+/webgl/videos/hockey.mov
