@@ -1,9 +1,7 @@
 import * as THREE from '../lib/three.module.js';
 import GUI from '../lib/lil-gui.module.min.js';
 import Stats from '../lib/stats.module.js';
-// La base del profesor usa Three.js r140: activamos su gestión de color sRGB.
 THREE.ColorManagement.legacyMode = false;
-// Cannon.js se carga en el HTML antes de este módulo.
 const CANNON = window.CANNON;
 
 const LARGO_CAMPO = 10.0
