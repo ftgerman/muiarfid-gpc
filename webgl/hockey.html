@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hockey de mesa</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      /* Dos mitades de la pantalla: azul claro a la izquierda, rojo claro a la derecha. */
+      background: linear-gradient(to right, #6688ff 0%, #6688ff 49%, #ff7777 51%, #ff7777 100%);
+        /*background: #000000;*/
+    }
+    body.modo-noche, body.fondo-negro { background: #000000; }
+    canvas { display: block; }
+
+    /* Panel lil-gui de encendido de los focos, debajo de los menús. */
+    .lil-gui.panel-focos {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 220px;
+      max-width: calc(100vw - 32px);
+      z-index: 1;
+    }
+
+    /* Menú centrado sobre el campo. */
+    .pantalla-inicio {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 2;
+    }
+    .menu {
+      width: min(100%, 340px);
+      box-sizing: border-box;
+      padding: 28px;
+      border: 1px solid #e2e5ea;
+      border-radius: 12px;
+      background: white;
+      color: #202938;
+      text-align: center;
+    }
+    .menu h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.2; }
+    .menu .descripcion { margin: 0 0 24px; color: #596273; font-size: 14px; line-height: 1.5; }
+    .menu button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      min-height: 46px;
+      padding: 12px 16px;
+      border: 1px solid #d8dde5;
+      border-radius: 6px;
+      background: white;
+      color: inherit;
+      font: inherit;
+      font-size: 15px;
+      cursor: pointer;
+      transition: filter 120ms ease;
+    }
+    .menu button:not(:disabled):hover { filter: brightness(0.94); }
+    .menu button:focus-visible { outline: 3px solid #96b6ff; outline-offset: 3px; }
+    .menu .boton-principal { background: #245bd6; border-color: #245bd6; color: white; font-weight: 600; }
+    #boton-menu-principal { margin-top: 20px; }
+    .boton-volver-menu {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 1;
+      padding: 12px 16px;
+      border: 1px solid #e2e5ea;
+      border-radius: 8px;
+      background: white;
+      color: #202938;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .boton-volver-menu:hover { filter: brightness(0.94); }
+    .boton-volver-menu:focus-visible { outline: 3px solid #96b6ff; outline-offset: 3px; }
+    #boton-modo-noche[aria-pressed="true"] { background: #edf3ff; border-color: #245bd6; color: #1c49b1; }
+    /* Puntos a cada lado y objetivo en el centro. */
+    .marcador {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(440px, calc(100% - 32px));
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border: 1px solid #e2e5ea;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .marcador .jugador-azul, .marcador .jugador-rojo {
+      padding: 10px 6px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .marcador strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 34px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .jugador-azul { color: #245bd6; background: #edf3ff; }
+    .jugador-rojo { color: #c8323b; background: #fff0f1; }
+    .objetivo { max-width: 95px; text-align: center; color: #596273; font-size: 13px; line-height: 1.5; font-weight: bold;}
+    [hidden] { display: none !important; }
+    @media (max-width: 760px) {
+      .marcador { top: 76px; } /* Deja espacio al botón en pantallas estrechas. */
+    }
+    @media (max-width: 480px) {
+      .marcador { gap: 8px; padding: 8px; }
+      .marcador strong { font-size: 30px; }
+      .menu { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <button type="button" id="boton-volver-menu" class="boton-volver-menu" hidden>Menú principal</button>
+  <section id="menu-inicio" class="pantalla-inicio" aria-label="Menú de inicio">
+    <div class="menu">
+      <h1>Hockey de mesa</h1>
+      <p class="descripcion">Gana quien llegue a 5 puntos.</p>
+      <button type="button" id="boton-jugar" class="boton-principal">Jugar</button>
+      <button type="button" id="boton-modo-noche" aria-pressed="false">Modo noche: No</button>
+      <button type="button" id="boton-cambiar-fondo" aria-pressed="false">Cambiar fondo</button>
+    </div>
+  </section>
+
+  <div id="marcador" class="marcador" aria-label="Marcador" hidden>
+    <div class="jugador-azul">Jugador azul<strong id="puntos-azul">0</strong></div>
+    <div class="objetivo">Objetivo: <br> 5 puntos</div>
+    <div class="jugador-rojo">Jugador rojo<strong id="puntos-rojo">0</strong></div>
+  </div>
+  <section id="ventana-victoria" class="pantalla-inicio" role="dialog" aria-modal="true" aria-labelledby="mensaje-victoria" hidden>
+    <div class="menu">
+      <h1 id="mensaje-victoria"></h1>
+      <button type="button" id="boton-menu-principal" class="boton-principal">Menú principal</button>
+    </div>
+  </section>
+  <script src="./lib/cannon_062.js"></script>
+  <script type="module" src="./js/hockey.js"></script>
+</body>
+</html>
